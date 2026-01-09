@@ -1,0 +1,92 @@
+<!DOCTYPE html><html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oscar House | Sistema Profissional</title><script src="https://cdn.tailwindcss.com"></script><script src="https://unpkg.com/lucide@latest"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet"><script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        primary: { 500: '#0056b3', 600: '#004494' },
+        accent: { 500: '#28a745' },
+        dark: { 900: '#1a1a1a' }
+      },
+      fontFamily: {
+        serif: ['Playfair Display'],
+        sans: ['Inter']
+      }
+    }
+  }
+}
+</script><style>
+.hero-bg{background:linear-gradient(rgba(0,0,0,.7),rgba(0,0,0,.7)),url('https://images.unsplash.com/photo-1574362848149-11496d93a7c7');background-size:cover;background-position:center}
+.editable-parent{position:relative}
+.edit-indicator{position:absolute;top:-10px;right:-10px;background:#0056b3;color:#fff;padding:6px;border-radius:50%;display:none;cursor:pointer}
+.editable-parent:hover .edit-indicator{display:block}
+[contenteditable="true"]{outline:2px dashed #0056b3;background:rgba(0,86,179,.05)}
+.hide-admin .admin-only{display:none!important}
+</style></head>
+<body class="font-sans bg-gray-50 text-gray-800"><input type="file" id="imageInput" accept="image/*" class="hidden"><!-- TOGGLE ADMIN --><div class="fixed bottom-4 right-4 z-50">
+<button onclick="toggleAdmin()" class="admin-only bg-black text-white px-4 py-2 rounded-lg text-xs font-bold">ADMIN</button>
+</div><!-- HERO --><section class="hero-bg min-h-screen flex items-center justify-center text-white text-center px-4">
+<div class="max-w-3xl">
+<div class="editable-parent">
+<h1 class="font-serif text-5xl mb-6">Conquiste seu imóvel com parcelas acessíveis</h1>
+<div class="edit-indicator" onclick="enableEdit(this)"><i data-lucide="pencil"></i></div>
+</div>
+<p class="text-gray-200">Simulação gratuita direto no WhatsApp</p>
+</div>
+</section><!-- ADMIN PANEL --><section class="admin-only py-16 bg-gray-100">
+<div class="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow">
+<h2 class="font-bold mb-6">Adicionar Imóvel</h2>
+<div class="grid md:grid-cols-2 gap-6">
+<div>
+<div id="preview" class="h-48 border-2 border-dashed rounded flex items-center justify-center">
+<img id="previewImg" class="hidden w-full h-full object-cover">
+<span class="text-xs text-gray-400">Foto do imóvel</span>
+</div>
+<button onclick="selectImage()" class="mt-4 w-full bg-gray-800 text-white py-2 rounded">Upload da Foto</button>
+</div>
+<div class="space-y-4">
+<input id="title" placeholder="Nome do imóvel" class="w-full p-3 border rounded">
+<input id="desc" placeholder="Localização" class="w-full p-3 border rounded">
+<input id="price" placeholder="Parcela" class="w-full p-3 border rounded">
+<button onclick="saveProperty()" class="bg-blue-600 text-white py-3 rounded font-bold">Salvar</button>
+</div>
+</div>
+</div>
+</section><!-- LISTA --><section class="py-20 bg-white">
+<div class="max-w-7xl mx-auto px-4">
+<h2 class="font-serif text-3xl mb-10">Imóveis</h2>
+<div id="list" class="grid md:grid-cols-3 gap-8"></div>
+</div>
+</section><footer class="bg-gray-900 text-gray-400 py-10 text-center text-sm">Oscar House • CRECI</footer><script>
+lucide.createIcons();
+
+let admin = false;
+const body = document.body;
+const imageInput = document.getElementById('imageInput');
+let currentImg = null;
+
+function toggleAdmin(){admin=!admin;body.classList.toggle('hide-admin',!admin)}
+function enableEdit(btn){const el=btn.parentElement.querySelector('h1,h2,h3,p');el.contentEditable=true;el.focus()}
+function selectImage(){currentImg=document.getElementById('previewImg');imageInput.click()}
+imageInput.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{currentImg.src=ev.target.result;currentImg.classList.remove('hidden')};r.readAsDataURL(f)}
+
+function saveProperty(){
+const data={title:title.value,desc:desc.value,price:price.value,img:previewImg.src};
+if(!data.title||!data.price||!data.img)return alert('Preencha tudo');
+const items=JSON.parse(localStorage.getItem('props')||'[]');
+items.push(data);localStorage.setItem('props',JSON.stringify(items));
+render();title.value=desc.value=price.value='';previewImg.src='';}
+
+function render(){
+const list=document.getElementById('list');list.innerHTML='';
+(JSON.parse(localStorage.getItem('props')||'[]')).forEach((p,i)=>{
+list.innerHTML+=`<div class="border rounded-xl overflow-hidden shadow"><img src="${p.img}" class="h-48 w-full object-cover"><div class="p-4"><h3 class="font-bold">${p.title}</h3><p class="text-sm text-gray-500">${p.desc}</p><p class="font-bold text-blue-600 mt-2">${p.price}</p><a target="_blank" href="https://wa.me/5511951904449?text=Tenho%20interesse%20no%20${encodeURIComponent(p.title)}" class="mt-4 inline-block bg-green-500 text-white px-4 py-2 rounded text-sm font-bold">WhatsApp</a>${admin?`<button onclick="remove(${i})" class="block text-xs text-red-500 mt-2">Excluir</button>`:''}</div></div>`})}
+function remove(i){const items=JSON.parse(localStorage.getItem('props'));items.splice(i,1);localStorage.setItem('props',JSON.stringify(items));render()}
+render();
+</script></body>
+</html>
